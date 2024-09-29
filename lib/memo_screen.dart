@@ -17,17 +17,35 @@ class _MemoScreenState extends State<MemoScreen> {
   List<Map<String, dynamic>> _memos = [];
   final TextEditingController _textController = TextEditingController();
   bool _isEmojiPickerVisible = false;
-  String _selectedEmoji = '';
-  final List<String> _moodEmojis = ['😊', '😄', '😍', '🤔', '😢', '😠', '😴', '😎'];
+  String _selectedEmoji = '😊';
   bool _isSendButtonEnabled = false;
   int _memoLimit = 12;
   int _todayMemoCount = 0;
+  DateTime? _selectedDate;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _listViewKey = GlobalKey();
+  final Map<DateTime, GlobalKey> _dateKeys = {};
+  static const int _maxCharacters = 100;
+  int _currentCharacters = 0;
 
   @override
   void initState() {
     super.initState();
-    _textController.addListener(_updateSendButtonState);
+    _textController.addListener(_updateCharacterCount);
     _loadMemos();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initDateKeys();
+    });
+  }
+
+  void _initDateKeys() {
+    setState(() {
+      _dateKeys.clear();
+      final groupedMemos = groupMemosByDate(_memos);
+      for (final date in groupedMemos.keys) {
+        _dateKeys[date] = GlobalKey();
+      }
+    });
   }
 
   @override
@@ -61,26 +79,39 @@ class _MemoScreenState extends State<MemoScreen> {
     await prefs.setString('memos', jsonEncode(_memos));
   }
 
-  void _updateSendButtonState() {
+  void _updateCharacterCount() {
     setState(() {
-      _isSendButtonEnabled = _textController.text.isNotEmpty;
+      _currentCharacters = _textController.text.length;
+      _isSendButtonEnabled = _textController.text.isNotEmpty && _currentCharacters <= _maxCharacters;
     });
   }
 
   void _addMemo(String text) {
-    if (_todayMemoCount < _memoLimit) {
+    if (_todayMemoCount < _memoLimit && text.length <= _maxCharacters) {
       setState(() {
         _memos.add({
           'text': text,
           'time': DateTime.now().toIso8601String(),
-          'emoji': _selectedEmoji.isEmpty ? '😀' : _selectedEmoji,
+          'emoji': _selectedEmoji,
         });
         _todayMemoCount++;
       });
       _saveMemos();
       _textController.clear();
-      _selectedEmoji = '';
-      _updateSendButtonState();
+      _updateCharacterCount();
+      
+      // 메모 추가 후 스크롤을 가장 아래로 이동
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          0.0,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      });
+    } else if (text.length > _maxCharacters) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('메모는 100자를 초과할 수 없습니다.')),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('오늘의 메모 한도에 도달했습니다.')),
@@ -110,7 +141,7 @@ class _MemoScreenState extends State<MemoScreen> {
   }
 
   void _showEmojiDialog() {
-    final List<String> emojis = ['🥰', '😊', '😎', '🤔', '😐', '😴', '😢', '😩', '😠'];
+    final List<String> emojis = ['😊', '😎', '🤔', '😐', '😴', '😢', '😩', '😠', '🥰'];
 
     showDialog(
       context: context,
@@ -174,18 +205,64 @@ class _MemoScreenState extends State<MemoScreen> {
   }
 
   Widget _buildDateHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(Duration(days: 1));
+
+    String dateText;
+    if (date == today) {
+      dateText = '오늘';
+    } else if (date == yesterday) {
+      dateText = '어제';
+    } else {
+      dateText = DateFormat('yyyy년 MM월 dd일').format(date);
+    }
+
     return Container(
+      key: _dateKeys[date],
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.center,
       child: Text(
-        DateFormat('yyyy년 MM월 dd일').format(date),
+        dateText,
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 13,
           fontWeight: FontWeight.bold,
-          color: AppStyles.secondaryTextColor,
+          color: Colors.black,
+          fontFamily: AppStyles.fontFamily,
         ),
       ),
     );
+  }
+
+  void _onDaySelected(DateTime selectedDay) {
+    setState(() {
+      _selectedDate = selectedDay;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedDate();
+    });
+  }
+
+  void _scrollToSelectedDate() {
+    if (_selectedDate == null) return;
+
+    final targetDate = DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
+    final dateKey = _dateKeys[targetDate];
+    
+    if (dateKey != null && dateKey.currentContext != null) {
+      final RenderBox renderBox = dateKey.currentContext!.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      final scrollPosition = _scrollController.position;
+      
+      // 리스트가 뒤집혀 있으므로, 스크롤 위치를 반대로 계산합니다.
+      final targetPosition = scrollPosition.maxScrollExtent - position.dy + scrollPosition.viewportDimension / 2;
+      
+      _scrollController.animateTo(
+        targetPosition.clamp(0.0, scrollPosition.maxScrollExtent),
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -193,128 +270,158 @@ class _MemoScreenState extends State<MemoScreen> {
     final now = DateTime.now();
     final todayString = DateFormat('yyyy년 MM월 dd일').format(now);
 
-    // 메모를 날짜별로 그룹화
+    // 메모를 날짜별로 룹화
     final groupedMemos = groupMemosByDate(_memos);
+    final sortedDates = groupedMemos.keys.toList()
+      ..sort((a, b) => b.compareTo(a));  // 날짜를 내림차순으로 정렬
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('DayO', style: AppStyles.headerStyle),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.calendar_today, color: AppStyles.textColor),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CalendarScreen(
-                    onDaySelected: (selectedDay) {
-                      Navigator.pop(context);
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(
+        overscroll: false,
+        physics: const ClampingScrollPhysics(),
+      ),
+      child: Scaffold(
+        backgroundColor: AppStyles.primaryColor,
+        body: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top,
+                left: 16,
+                right: 16,
+                bottom: 8,
+              ),
+              color: AppStyles.appBarBackgroundColor,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Text('DayO', style: AppStyles.headerStyle, textAlign: TextAlign.left),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.calendar_today, color: AppStyles.textColor),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CalendarScreen(
+                            onDaySelected: _onDaySelected,
+                          ),
+                        ),
+                      );
                     },
                   ),
-                ),
-              );
-            },
-          ),
-        ],
-        // bottom 속성 제거
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: ListView(
-                reverse: true,
-                children: groupedMemos.entries.map((entry) {
-                  final date = entry.key;
-                  final memos = entry.value;
-                  return Column(
-                    children: [
-                      _buildDateHeader(date),
-                      ...memos.map((memo) => _buildMemoItem(memo)),
-                    ],
-                  );
-                }).toList(),
+                ],
               ),
             ),
-          ),
-          Divider(
-            color: AppStyles.borderColor,
-            thickness: 1,
-            height: 1,
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
-                    _showEmojiDialog();
+            Expanded(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  reverse: true,
+                  key: _listViewKey,
+                  physics: const ClampingScrollPhysics(), // 스크롤 효과 수정
+                  itemCount: sortedDates.length,
+                  itemBuilder: (context, index) {
+                    final date = sortedDates[index];
+                    final memos = groupedMemos[date]!;
+                    return Column(
+                      children: [
+                        _buildDateHeader(date),
+                        ...memos.map((memo) => _buildMemoItem(memo)).toList(),
+                      ],
+                    );
                   },
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    child: Text(_selectedEmoji.isEmpty ? '😀' : _selectedEmoji, style: TextStyle(fontSize: 24)),
-                  ),
                 ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppStyles.inputBackgroundColor,
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                      child: TextField(
-                        controller: _textController,
-                        autofocus: false,
-                        maxLines: null,
-                        decoration: InputDecoration(
-                          hintText: '기억을 적어봐요.',
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(color: AppStyles.secondaryTextColor),
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                        ),
-                        style: TextStyle(color: AppStyles.textColor),
-                        onChanged: (text) {
-                          _updateSendButtonState();
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        FocusScope.of(context).unfocus();
-                        if (_isSendButtonEnabled && _textController.text.isNotEmpty) {
-                          _addMemo(_textController.text);
-                        }
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.send,
-                          color: _isSendButtonEnabled ? AppStyles.accentColor : AppStyles.secondaryTextColor,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '$_todayMemoCount/$_memoLimit',
-                      style: TextStyle(fontSize: 10, color: AppStyles.secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-          SizedBox(height: MediaQuery.of(context).padding.bottom),
-        ],
+            // Divider 제거
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                      _showEmojiDialog();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      child: Text(_selectedEmoji, style: TextStyle(fontSize: 24)),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppStyles.inputBackgroundColor,
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),  // 여기를 수정
+                            child: TextField(
+                              controller: _textController,
+                              autofocus: false,
+                              maxLines: null,
+                              maxLength: _maxCharacters,
+                              decoration: InputDecoration(
+                                hintText: '기억을 적어봐요.',
+                                border: InputBorder.none,
+                                hintStyle: TextStyle(color: Colors.grey, fontFamily: "Tenada", fontSize: 13),
+                                contentPadding: EdgeInsets.zero,
+                                isDense: true,
+                                counterText: '',
+                              ),
+                              style: TextStyle(color: AppStyles.textColor, fontSize: 14),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0, right: 8.0),
+                            child: Text(
+                              '$_currentCharacters/$_maxCharacters',
+                              style: TextStyle(fontSize: 10, color: AppStyles.secondaryTextColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                          if (_isSendButtonEnabled && _textController.text.isNotEmpty) {
+                            _addMemo(_textController.text);
+                          }
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.send,
+                            color: _isSendButtonEnabled ? AppStyles.accentColor : AppStyles.secondaryTextColor,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '$_todayMemoCount/$_memoLimit',
+                        style: TextStyle(fontSize: 10, color: AppStyles.secondaryTextColor),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom),
+          ],
+        ),
       ),
     );
   }
