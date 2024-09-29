@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'main.dart';
 import 'styles.dart';
+import 'settings_screen.dart'; // 추가
 
 class MemoScreen extends StatefulWidget {
   const MemoScreen({Key? key}) : super(key: key);
@@ -299,18 +300,33 @@ class _MemoScreenState extends State<MemoScreen> {
                     padding: EdgeInsets.only(top: 16),
                     child: Text('DayO', style: AppStyles.headerStyle, textAlign: TextAlign.left),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.calendar_today, color: AppStyles.textColor),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CalendarScreen(
-                            onDaySelected: _onDaySelected,
-                          ),
-                        ),
-                      );
-                    },
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.calendar_today, color: AppStyles.textColor),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CalendarScreen(
+                                onDaySelected: _onDaySelected,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.settings, color: AppStyles.textColor),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

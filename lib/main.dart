@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'memo_screen.dart';
 import 'styles.dart';
+import 'loading_screen.dart';
+import 'login_screen.dart';
 
 late SharedPreferences prefs;
 
@@ -17,56 +19,37 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'DayO',
       theme: AppStyles.lightTheme,
-      home: MemoScreen(),
+      home: FutureBuilder(
+        future: _checkLoginStatus(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return LoadingScreen();
+          } else {
+            if (snapshot.data == true) {
+              return MainScreen();
+            } else {
+              return LoginScreen();
+            }
+          }
+        },
+      ),
     );
   }
-}
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-
-  static final List<Widget> _widgetOptions = <Widget>[
-    const MemoScreen(),
-    const Text('설정'),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  Future<bool> _checkLoginStatus() async {
+    await Future.delayed(Duration(seconds: 2)); // 로딩 화면을 보여주기 위한 지연
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    return isLoggedIn;
   }
+}
+
+class MainScreen extends StatelessWidget {
+  const MainScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('메모 앱'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: '메모',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: '설정',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
+    return const Scaffold(
+      body: MemoScreen(),
     );
   }
 }
