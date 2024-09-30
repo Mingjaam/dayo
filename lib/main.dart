@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';  // 이 줄을 추가합니다.
 import 'package:shared_preferences/shared_preferences.dart';
 import 'memo_screen.dart';
 import 'styles.dart';
@@ -10,6 +11,13 @@ late SharedPreferences prefs;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
+  
+  // 이 부분을 추가합니다.
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
   runApp(MyApp());
 }
 

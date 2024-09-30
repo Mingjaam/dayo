@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'styles.dart';
 import 'main.dart';
 import 'login_screen.dart';
@@ -12,11 +13,13 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   String _appVersion = '1.0.0';
   bool _isLoggedIn = false;
+  User? _user;
 
   @override
   void initState() {
     super.initState();
     _checkLoginStatus();
+    _loadUserInfo();
   }
 
   void _checkLoginStatus() async {
@@ -24,6 +27,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _isLoggedIn = isLoggedIn;
     });
+  }
+
+  void _loadUserInfo() async {
+    if (_isLoggedIn) {
+      try {
+        User user = await UserApi.instance.me();
+        setState(() {
+          _user = user;
+        });
+      } catch (error) {
+        print('사용자 정보 로드 실패: $error');
+      }
+    }
   }
 
   @override
@@ -63,6 +79,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text('배경색 설정', style: AppStyles.memoTextStyle),
             onTap: _showBackgroundColorPicker,
           ),
+          if (_isLoggedIn && _user != null)
+            ListTile(
+              title: Text('로그인 정보', style: AppStyles.memoTextStyle),
+              onTap: _showLoginInfo,
+            ),
         ],
       ),
     );
@@ -125,5 +146,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showBackgroundColorPicker() {
     // 여기에 배경색 선택 로직을 구현하세요
     // 예: 색상 선택 다이얼로그를 표시하고 선택된 색상을 저장
+  }
+
+  void _showLoginInfo() {
+    if (_user == null) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('로그인 정보'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('회원번호: ${_user!.id}'),
+              Text('닉네임: ${_user!.kakaoAccount?.profile?.nickname ?? "없음"}'),
+              Text('프로필 이미지: ${_user!.kakaoAccount?.profile?.profileImageUrl ?? "없음"}'),
+              Text('이메일: ${_user!.kakaoAccount?.email ?? "없음"}'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
