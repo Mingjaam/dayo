@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+// import 'package:sign_in_with_apple/sign_in_with_apple.dart' 제거
 import 'styles.dart';
 import 'main.dart';
 
@@ -51,11 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              SignInWithAppleButton(
-                onPressed: _loginWithApple,
-                style: SignInWithAppleButtonStyle.black,
-              ),
+              // 애플 로그인 버튼 제거
             ],
           ),
         ),
@@ -104,27 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (error) {
       print('카카오 로그인 실패 $error');
       _showErrorDialog('카카오 로그인 실패', '로그인 과정에서 오류가 발생했습니다.');
-    }
-  }
-
-  void _loginWithApple() async {
-    try {
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-      
-      print('애플 로그인 성공 ${credential.userIdentifier}');
-      
-      // 로그인 성공 후 처리
-      await prefs.setBool('isLoggedIn', true);
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => MainScreen()),
-      );
-    } catch (error) {
-      print('애플 로그인 실패 $error');
     }
   }
 

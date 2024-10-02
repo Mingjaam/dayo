@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'calendar_screen.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'main.dart';

@@ -33,11 +33,10 @@ dependencies:
   table_calendar: ^3.0.9  # 최신 버전 사용
 
   cupertino_icons: ^1.0.8
-  emoji_picker_flutter: ^1.5.0  # 최신 버전을 사용하세요
   shared_preferences: ^2.0.0
   forge2d: ^0.11.0
   kakao_flutter_sdk: ^1.4.1
-  sign_in_with_apple: ^4.3.0
+  # sign_in_with_apple: ^4.3.0 제거
 
 dev_dependencies:
   flutter_test:
