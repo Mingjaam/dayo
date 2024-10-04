@@ -458,17 +458,17 @@ class _MemoScreenState extends State<MemoScreen> {
           builder: (BuildContext context) {
             return AlertDialog(
               backgroundColor: AppStyles.primaryColor,
-              title: Text('삭제', style: TextStyle(color: AppStyles.textColor)),
+              title: Text('삭제', style: TextStyle(color: AppStyles.textColor,fontFamily: "Tenada")),
               content: Text('이 기억을 삭제 하시겠습니까? \n당신의 머리속에서 사라지진 않습니다.', style: TextStyle(color: AppStyles.textColor)),
               actions: <Widget>[
                 TextButton(
-                  child: Text('취소', style: TextStyle(color: AppStyles.textColor)),
+                  child: Text('취소', style: TextStyle(color: AppStyles.textColor,fontFamily: "Tenada")),
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
                 ),
                 TextButton(
-                  child: Text('삭제', style: TextStyle(color: AppStyles.textColor)),
+                  child: Text('삭제', style: TextStyle(color: AppStyles.textColor,fontFamily: "Tenada")),
                   onPressed: () {
                     Navigator.of(context).pop(true);
                   },

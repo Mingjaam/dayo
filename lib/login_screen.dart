@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 48),
               ElevatedButton(
-                child: Text('카카오톡으로 로그인'),
+                child: Text('카카오톡으로 로그인', style: TextStyle(fontFamily: "Tenada")),
                 onPressed: _loginWithKakao,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFFEE500),

@@ -113,11 +113,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('전체 정보 초기화'),
-          content: Text('모든 데이터가 삭제됩니다. 계속하시겠습니까?'),
+          title: Text('전체 정보 초기화', style: TextStyle(fontFamily: "Tenada")),
+          content: Text('모든 데이터가 삭제됩니다. 계속하시겠습니까?', style: TextStyle(fontFamily: "Tenada")),
           actions: <Widget>[
             TextButton(
-              child: Text('취소'),
+              child: Text('취소', style: TextStyle(fontFamily: "Tenada")),
               onPressed: () {
                 Navigator.of(context).pop();
               },
