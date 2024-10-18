@@ -1,4 +1,4 @@
-package com.example.dayo
+package com.mingjam.dayo
 
 import io.flutter.embedding.android.FlutterActivity
 

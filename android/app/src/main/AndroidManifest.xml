@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.dayo">
+    package="com.mingjam.dayo">
     <application
         android:label="DayO"
         android:name="${applicationName}"

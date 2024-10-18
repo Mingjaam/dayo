@@ -160,7 +160,7 @@ class _MemoScreenState extends State<MemoScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '이모티콘 선택',
+                  '지금 기분은 어떤가요?',
                   style: AppStyles.headerStyle,
                 ),
                 SizedBox(height: 12),
@@ -182,14 +182,27 @@ class _MemoScreenState extends State<MemoScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppStyles.accentColor,
+                            color: AppStyles.beige,  // 배경색을 베이지로 변경
                             borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey),  // 회색 테두리 추가
                           ),
-                          child: Center(
-                            child: Text(
-                              emojis[index],
-                              style: TextStyle(fontSize: 30),
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: _getColorFromEmoji(emojis[index]),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                emojis[index],
+                                style: TextStyle(fontSize: 30),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -262,6 +275,21 @@ class _MemoScreenState extends State<MemoScreen> {
         duration: Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
+    }
+  }
+
+  Color _getColorFromEmoji(String emoji) {
+    switch (emoji) {
+      case '😠': return Colors.red;
+      case '😩': return Colors.red;
+      case '😊': return const Color(0xFFFFD700);
+      case '😎': return const Color(0xFFFFD700);
+      case '😢': return Colors.blue;
+      case '😴': return Colors.green;
+      case '😐': return Colors.green;
+      case '🥰': return const Color.fromARGB(255, 255, 134, 231);
+      case '🤔': return Colors.purple;
+      default: return Colors.grey;
     }
   }
 
@@ -365,7 +393,20 @@ class _MemoScreenState extends State<MemoScreen> {
                     },
                     child: Container(
                       padding: EdgeInsets.all(8),
-                      child: Text(_selectedEmoji, style: TextStyle(fontSize: 24)),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: _getColorFromEmoji(_selectedEmoji),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Text(_selectedEmoji, style: TextStyle(fontSize: 24)),
+                        ],
+                      ),
                     ),
                   ),
                   Expanded(
@@ -530,4 +571,5 @@ class _MemoScreenState extends State<MemoScreen> {
   bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
   }
+
 }
