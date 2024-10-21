@@ -105,8 +105,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return GestureDetector(
       onTap: () => colorProvider.changeColor(color),
       child: Container(
-        decoration: BoxDecoration(  
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
+          color: color, // 선택된 색상일 경우 음각 효과
           border: isSelected ? Border.all(color: Colors.black54, width: 2) : null, // 음각 효과
         ),
         width: 40,
