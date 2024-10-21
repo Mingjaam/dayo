@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'main.dart';
 import 'styles.dart';
 import 'settings_screen.dart'; // 추가
+import 'color_provider.dart';
+import 'package:provider/provider.dart';
 
 class MemoScreen extends StatefulWidget {
   const MemoScreen({Key? key}) : super(key: key);
@@ -14,6 +16,7 @@ class MemoScreen extends StatefulWidget {
 }
 
 class _MemoScreenState extends State<MemoScreen> {
+  ColorProvider? colorProvider;
   List<Map<String, dynamic>> _memos = [];
   final TextEditingController _textController = TextEditingController();
   bool _isEmojiPickerVisible = false;
@@ -412,7 +415,7 @@ class _MemoScreenState extends State<MemoScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppStyles.inputBackgroundColor,
+                        color: Provider.of<ColorProvider>(context).memoBubbleColor,
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Stack(
@@ -426,6 +429,7 @@ class _MemoScreenState extends State<MemoScreen> {
                               maxLines: null,
                               maxLength: _maxCharacters,
                               decoration: InputDecoration(
+                                fillColor: Provider.of<ColorProvider>(context).memoBubbleColor,
                                 hintText: '기억을 적어봐요.',
                                 border: InputBorder.none,
                                 hintStyle: TextStyle(color: Colors.grey, fontFamily: "Tenada", fontSize: 13),
@@ -529,7 +533,10 @@ class _MemoScreenState extends State<MemoScreen> {
           child: FractionallySizedBox(
             widthFactor: 0.8,
             child: Container(
-              decoration: AppStyles.memoBubbleDecoration,
+              decoration: BoxDecoration(
+                color: Provider.of<ColorProvider>(context).memoBubbleColor,
+                borderRadius: BorderRadius.circular(12.0),
+              ),
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

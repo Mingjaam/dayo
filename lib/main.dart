@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'memo_screen.dart';
 import 'styles.dart';
 import 'loading_screen.dart';
+import 'color_provider.dart';
+import 'package:provider/provider.dart';
 
 late SharedPreferences prefs;
 
@@ -16,7 +18,12 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ColorProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

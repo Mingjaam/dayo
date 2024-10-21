@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'styles.dart';
 import 'main.dart';
+import 'color_provider.dart';
+import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -20,6 +22,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorProvider = Provider.of<ColorProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('설정', style: AppStyles.headerStyle),
@@ -37,10 +41,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text('앱 버전', style: AppStyles.memoTextStyle),
             subtitle: Text(_appVersion, style: AppStyles.memoTimeStyle),
           ),
-          // ListTile(
-          //   title: Text('테마 색 설정', style: AppStyles.memoTextStyle),
-          //   onTap: _showColorPicker,
-          // ),
+          // 테마 색 설정 추가
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('테마 색 설정', style: AppStyles.headerStyle),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildColorOption(AppStyles.lightPink, colorProvider),
+              _buildColorOption(const Color.fromARGB(255, 193, 247, 195), colorProvider),
+              _buildColorOption(const Color.fromARGB(255, 184, 228, 242), colorProvider),
+              _buildColorOption(const Color.fromARGB(255, 255, 255, 153), colorProvider),
+            ],
+          ),
           // ListTile(
           //   title: Text('배경색 설정', style: AppStyles.memoTextStyle),
           //   onTap: _showBackgroundColorPicker,
@@ -78,14 +92,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showColorPicker() {
-    // 여기에 테마 색 선택 로직을 구현하세요
-    // 예: 색상 선택 다이얼로그를 표시하고 선택된 색상을 저장
-  }
+
 
   void _showBackgroundColorPicker() {
     // 여기에 배경색 선택 로직을 구현하세요
     // 예: 색상 선택 다이얼로그를 표시하고 선택된 색상을 저장
   }
 
+  Widget _buildColorOption(Color color, ColorProvider colorProvider) {
+    bool isSelected = colorProvider.memoBubbleColor == color; // 선택된 색상 확인
+
+    return GestureDetector(
+      onTap: () => colorProvider.changeColor(color),
+      child: Container(
+        decoration: BoxDecoration(  
+          shape: BoxShape.circle,
+        ),
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        child: isSelected
+            ? Icon(Icons.check, color: Colors.black) // 선택된 경우 체크 아이콘 표시
+            : null,
+      ),
+    );
+  }
 }
