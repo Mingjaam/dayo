@@ -107,6 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Container(
         decoration: BoxDecoration(  
           shape: BoxShape.circle,
+          border: isSelected ? Border.all(color: Colors.black54, width: 2) : null, // 음각 효과
         ),
         width: 40,
         height: 40,
