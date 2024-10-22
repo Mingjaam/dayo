@@ -27,40 +27,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('설정', style: AppStyles.headerStyle),
-        backgroundColor: AppStyles.appBarBackgroundColor,
+        backgroundColor: colorProvider.commonBackgroundColor,
         elevation: 0,
         iconTheme: IconThemeData(color: AppStyles.textColor),
       ),
-      body: ListView(
-        children: [
-          ListTile(
-            title: Text('전체 정보 초기화', style: AppStyles.memoTextStyle),
-            onTap: _resetAllData,
-          ),
-          ListTile(
-            title: Text('앱 버전', style: AppStyles.memoTextStyle),
-            subtitle: Text(_appVersion, style: AppStyles.memoTimeStyle),
-          ),
-          // 테마 색 설정 추가
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('테마 색 설정', style: AppStyles.headerStyle),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildColorOption(AppStyles.lightPink, colorProvider),
-              _buildColorOption(const Color.fromARGB(255, 193, 247, 195), colorProvider),
-              _buildColorOption(const Color.fromARGB(255, 184, 228, 242), colorProvider),
-              _buildColorOption(const Color.fromARGB(255, 255, 255, 153), colorProvider),
-            ],
-          ),
-          // ListTile(
-          //   title: Text('배경색 설정', style: AppStyles.memoTextStyle),
-          //   onTap: _showBackgroundColorPicker,
-          // ),
+      body: Container(
+        color: colorProvider.commonBackgroundColor, // 통일된 배경색 사용
+        child: ListView(
+          children: [
+            ListTile(
+              title: Text('전체 정보 초기화', style: AppStyles.memoTextStyle),
+              onTap: _resetAllData,
+            ),
+            ListTile(
+              title: Text('앱 버전', style: AppStyles.memoTextStyle),
+              subtitle: Text(_appVersion, style: AppStyles.memoTimeStyle),
+            ),
+            // 테마 색 설정 추가
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('테마 색 설정', style: AppStyles.headerStyle),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildColorOption(AppStyles.lightPink, colorProvider),
+                _buildColorOption(AppStyles.lightGreen, colorProvider),
+                _buildColorOption(AppStyles.lightBlue, colorProvider),
+                _buildColorOption(AppStyles.lightYellow, colorProvider),
+              ],
+            ),
+                      Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('테마 색 설정', style: AppStyles.headerStyle),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildBGColorOption(AppStyles.commonBackgroundColor, colorProvider),
+                _buildBGColorOption(const Color.fromARGB(255, 111, 111, 111), colorProvider),
+              ],
+            ),
 
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -103,12 +113,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool isSelected = colorProvider.memoBubbleColor == color; // 선택된 색상 확인
 
     return GestureDetector(
-      onTap: () => colorProvider.changeColor(color),
+      onTap: () => colorProvider.changeMemoColor(color),
       child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color, // 선택된 색상일 경우 음각 효과
-          border: isSelected ? Border.all(color: Colors.black54, width: 2) : null, // 음각 효과
+          boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 1)],
+          color: color,
+          border: isSelected ? Border.all(color: Colors.black54, width: 1) : null, // 음각 효과
+        ),
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        child: isSelected
+            ? Icon(Icons.check, color: Colors.black) // 선택된 경우 체크 아이콘 표시
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildBGColorOption(Color color, ColorProvider colorProvider) {
+    bool isSelected = colorProvider.commonBackgroundColor == color;
+
+    return GestureDetector(
+      onTap: () => colorProvider.changeBGColor(color),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 1)],
+          color: color,
+          border: isSelected ? Border.all(color: Colors.black54, width: 1) : null, // 음각 효과
         ),
         width: 40,
         height: 40,

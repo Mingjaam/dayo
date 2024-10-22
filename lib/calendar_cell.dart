@@ -3,6 +3,9 @@ import 'package:forge2d/forge2d.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'styles.dart';
+import 'color_provider.dart';
+import 'package:provider/provider.dart';
+
 class CalendarCell extends StatefulWidget {
   final DateTime day;
   final bool isSelected;
@@ -135,7 +138,7 @@ class _CalendarCellState extends State<CalendarCell> with SingleTickerProviderSt
           height: widget.cellHeight,
           margin: EdgeInsets.all(1),
           decoration: BoxDecoration(
-            color: widget.isSelected ? AppStyles.lightPink : (widget.isToday ? AppStyles.lightPink : null),
+            color: widget.isSelected ? Provider.of<ColorProvider>(context).memoBubbleColor : (widget.isToday ? Provider.of<ColorProvider>(context).memoBubbleColor : null),
             border: Border.all(color: Colors.grey[300]!),
             borderRadius: BorderRadius.circular(4),
           ),

@@ -6,6 +6,8 @@ import 'styles.dart';
 import 'calendar_cell.dart';
 import 'main.dart';
 import 'monthly_ball_count_widget.dart';
+import 'color_provider.dart';
+import 'package:provider/provider.dart';
 
 class CalendarScreen extends StatefulWidget {
   final Function(DateTime) onDaySelected;
@@ -22,6 +24,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<Map<String, dynamic>> _memos = [];
   late int _selectedYear;
   late int _selectedMonth;
+  late ColorProvider colorProvider;
 
   @override
   void initState() {
@@ -31,6 +34,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _selectedYear = _focusedDay.year;
     _selectedMonth = _focusedDay.month;
     _loadMemos();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    colorProvider = Provider.of<ColorProvider>(context);
   }
 
   Future<void> _loadMemos() async {
@@ -55,7 +64,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              backgroundColor: AppStyles.primaryColor,  // 배경색 지정
+              backgroundColor: AppStyles.commonBackgroundColor,  // 배경색 지정
               title: Text('년도와 월 선택', 
                 style: TextStyle(
                   fontFamily: AppStyles.fontFamily,
@@ -183,6 +192,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: colorProvider.commonBackgroundColor,
         title: Center(
           child: Text(
             "${_focusedDay.year}년, ${_focusedDay.month}월의 기억",
@@ -196,93 +206,96 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2010, 10, 16),
-            lastDay: DateTime.utc(2030, 3, 14),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-              widget.onDaySelected(selectedDay);
-              Navigator.pop(context);
-            },
-            onPageChanged: (focusedDay) {
-              setState(() {
-                _focusedDay = focusedDay;
-              });
-            },
-            calendarStyle: CalendarStyle(
-              outsideDaysVisible: false,
-              cellMargin: EdgeInsets.zero,
-              cellPadding: EdgeInsets.zero,
-              todayDecoration: BoxDecoration(
-                color: AppStyles.lightPink,
-                shape: BoxShape.circle,
+      body: Container(
+        color: colorProvider.commonBackgroundColor, // 통일된 배경색 사용
+        child: Stack(
+          children: [
+            TableCalendar(
+              firstDay: DateTime.utc(2010, 10, 16),
+              lastDay: DateTime.utc(2030, 3, 14),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+                widget.onDaySelected(selectedDay);
+                Navigator.pop(context);
+              },
+              onPageChanged: (focusedDay) {
+                setState(() {
+                  _focusedDay = focusedDay;
+                });
+              },
+              calendarStyle: CalendarStyle(
+                outsideDaysVisible: false,
+                cellMargin: EdgeInsets.zero,
+                cellPadding: EdgeInsets.zero,
+                todayDecoration: BoxDecoration(
+                  color: AppStyles.lightPink,
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: Colors.black,
+                  shape: BoxShape.circle,
+                ),
               ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.black,
-                shape: BoxShape.circle,
+              daysOfWeekHeight: 20,
+              sixWeekMonthsEnforced: true,
+              rowHeight: (MediaQuery.of(context).size.height -
+                  AppBar().preferredSize.height -
+                  MediaQuery.of(context).padding.top) / 7,
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: false,
+                leftChevronVisible: false,
+                rightChevronVisible: false,
+                titleTextStyle: TextStyle(fontSize: 0),
+              ),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  return CalendarCell(
+                    day: day,
+                    isSelected: false,
+                    isToday: false,
+                    isFocused: isSameMonth(day, focusedDay),
+                    memos: _getMemosForDay(day),
+                    cellWidth: cellWidth,
+                    cellHeight: cellHeight,
+                  );
+                },
+                selectedBuilder: (context, day, focusedDay) {
+                  return CalendarCell(
+                    day: day,
+                    isSelected: true,
+                    isToday: false,
+                    isFocused: true,
+                    memos: _getMemosForDay(day),
+                    cellWidth: cellWidth,
+                    cellHeight: cellHeight,
+                  );
+                },
+                todayBuilder: (context, day, focusedDay) {
+                  return CalendarCell(
+                    day: day,
+                    isSelected: false,
+                    isToday: true,
+                    isFocused: true,
+                    memos: _getMemosForDay(day),
+                    cellWidth: cellWidth,
+                    cellHeight: cellHeight,
+                  );
+                },
               ),
             ),
-            daysOfWeekHeight: 20,
-            sixWeekMonthsEnforced: true,
-            rowHeight: (MediaQuery.of(context).size.height -
-                AppBar().preferredSize.height -
-                MediaQuery.of(context).padding.top) / 7,
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: false,
-              leftChevronVisible: false,
-              rightChevronVisible: false,
-              titleTextStyle: TextStyle(fontSize: 0),
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: MonthlyBallCountWidget(ballCount: _getMonthlyBallCount()),
             ),
-            calendarBuilders: CalendarBuilders(
-              defaultBuilder: (context, day, focusedDay) {
-                return CalendarCell(
-                  day: day,
-                  isSelected: false,
-                  isToday: false,
-                  isFocused: isSameMonth(day, focusedDay),
-                  memos: _getMemosForDay(day),
-                  cellWidth: cellWidth,
-                  cellHeight: cellHeight,
-                );
-              },
-              selectedBuilder: (context, day, focusedDay) {
-                return CalendarCell(
-                  day: day,
-                  isSelected: true,
-                  isToday: false,
-                  isFocused: true,
-                  memos: _getMemosForDay(day),
-                  cellWidth: cellWidth,
-                  cellHeight: cellHeight,
-                );
-              },
-              todayBuilder: (context, day, focusedDay) {
-                return CalendarCell(
-                  day: day,
-                  isSelected: false,
-                  isToday: true,
-                  isFocused: true,
-                  memos: _getMemosForDay(day),
-                  cellWidth: cellWidth,
-                  cellHeight: cellHeight,
-                );
-              },
-            ),
-          ),
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: MonthlyBallCountWidget(ballCount: _getMonthlyBallCount()),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

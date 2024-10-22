@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 
 class AppStyles {
+
+  static const Color lightPink = Color(0xFFF5EBEB); 
+  static const Color lightGreen = Color.fromARGB(255, 204, 230, 205); 
+  static const Color lightBlue = Color.fromARGB(255, 206, 231, 239); 
+  static const Color lightYellow = Color.fromARGB(255, 251, 250, 208); 
+
   // 기본 색상
   static const Color lightGrey = Color(0xFFCACDD3);  // 연한 회색
-  static const Color lightPink = Color(0xFFF5EBEB);  // 연한 분홍색
+ // 연한 분홍색
   static const Color lightPeach = Color(0xFFEECEC9);  // 연한 살구색
   static const Color mediumPink = Color(0xFFC49894);  // 중간 톤의 분홍색
   static const Color mediumBlueGrey = Color(0xFF92A5BF);  // 중간 톤의 청회색
   static const Color beige = Color(0xFFF6F5F2);  // 연한 베이지색
+
+  // 공통 배경색
+  static const Color commonBackgroundColor = Colors.white; // 통일할 배경색
 
   // 앱 색상 (쉽게 변경 가능)
   static const Color primaryColor = beige;
@@ -91,7 +100,7 @@ class AppStyles {
   );
 
   // 캘린더 관련 색상
-  static const Color calendarCellBackground = Color(0xFFFFFAFA);  // 기본 셀 배경색
+  static const Color calendarCellBackground = commonBackgroundColor;  // 기본 셀 배경색
   static const Color calendarTodayBackground = lightPink;  // 오늘 날짜 배경색
   static const Color calendarSelectedBackground = lightPink;  // 선택된 날짜 배경색
   static const Color calendarWeekendText = Color(0xFFFF69B4);  // 주말 텍스트 색상

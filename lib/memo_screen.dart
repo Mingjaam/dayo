@@ -300,11 +300,12 @@ class _MemoScreenState extends State<MemoScreen> {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final todayString = DateFormat('yyyy년 MM월 dd일').format(now);
+    final colorProvider = Provider.of<ColorProvider>(context);
 
-    // 메모를 날짜별로 룹화
+    // 메모를 날짜별로 그룹화
     final groupedMemos = groupMemosByDate(_memos);
     final sortedDates = groupedMemos.keys.toList()
-      ..sort((a, b) => b.compareTo(a));  // 날짜를 내림차순으로 정렬
+      ..sort((a, b) => b.compareTo(a));
 
     return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context).copyWith(
@@ -312,7 +313,7 @@ class _MemoScreenState extends State<MemoScreen> {
         physics: const ClampingScrollPhysics(),
       ),
       child: Scaffold(
-        backgroundColor: AppStyles.primaryColor,
+        backgroundColor: colorProvider.commonBackgroundColor, // ColorProvider에서 배경색 가져오기
         body: Column(
           children: [
             Container(
@@ -322,7 +323,7 @@ class _MemoScreenState extends State<MemoScreen> {
                 right: 16,
                 bottom: 8,
               ),
-              color: AppStyles.appBarBackgroundColor,
+              color: colorProvider.commonBackgroundColor, // ColorProvider에서 배경색 가져오기
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -368,7 +369,7 @@ class _MemoScreenState extends State<MemoScreen> {
                   controller: _scrollController,
                   reverse: true,
                   key: _listViewKey,
-                  physics: const ClampingScrollPhysics(), // 스크롤 효과 수정
+                  physics: const ClampingScrollPhysics(),
                   itemCount: sortedDates.length,
                   itemBuilder: (context, index) {
                     final date = sortedDates[index];
@@ -376,15 +377,15 @@ class _MemoScreenState extends State<MemoScreen> {
                     return Column(
                       children: [
                         _buildDateHeader(date),
-                        ...memos.map((memo) => _buildMemoItem(memo)).toList(),
+                        ...memos.map((memo) => _buildMemoItem(memo, colorProvider.memoBubbleColor)).toList(), // 수정된 부분
                       ],
                     );
                   },
                 ),
               ),
             ),
-            // Divider 제거
             Container(
+              color: colorProvider.commonBackgroundColor, // ColorProvider에서 배경색 가져오기
               padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -486,7 +487,7 @@ class _MemoScreenState extends State<MemoScreen> {
     );
   }
 
-  Widget _buildMemoItem(Map<String, dynamic> memo) {
+  Widget _buildMemoItem(Map<String, dynamic> memo, Color memoColor) {
     final memoDate = DateTime.parse(memo['time']);
     return Dismissible(
       key: Key(memo['time']),
