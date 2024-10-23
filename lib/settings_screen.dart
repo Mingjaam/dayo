@@ -4,7 +4,6 @@ import 'styles.dart';
 import 'main.dart';
 import 'color_provider.dart';
 import 'package:provider/provider.dart';
-
 class SettingsScreen extends StatefulWidget {
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -94,6 +93,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: () async {
                 await prefs.clear();
                 Navigator.of(context).pop();
+                // 데이터 초기화 후 화면 업데이트
+                setState(() {
+                  // 필요한 상태 변수 초기화
+                });
+                // 메인 화면으로 이동하고 스택 초기화
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => MainScreen()),
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],
