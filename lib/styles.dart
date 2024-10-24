@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 class AppStyles {
 
   static const Color lightPink = Color(0xFFF5EBEB); 
-  static const Color lightGreen = Color.fromARGB(255, 204, 230, 205); 
-  static const Color lightBlue = Color.fromARGB(255, 206, 231, 239); 
-  static const Color lightYellow = Color.fromARGB(255, 251, 250, 208); 
+  static const Color lightGreen = Color(0xFFE2F0CB); 
+  static const Color lightBlue = Color(0xFFD0E4EB); 
+  static const Color lightYellow = Color(0xFFF9F5E7); 
+  static const Color lightPurple = Color(0xFFC7CEEA); 
+  static const Color lightOrange = Color(0xFFFFDAC1); 
 
   // 기본 색상
   static const Color lightGrey = Color(0xFFCACDD3);  // 연한 회색

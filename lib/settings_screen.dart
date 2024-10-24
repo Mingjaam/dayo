@@ -54,6 +54,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildColorOption(AppStyles.lightGreen, colorProvider),
                 _buildColorOption(AppStyles.lightBlue, colorProvider),
                 _buildColorOption(AppStyles.lightYellow, colorProvider),
+                _buildColorOption(AppStyles.lightPurple, colorProvider),
+                _buildColorOption(AppStyles.lightOrange, colorProvider),
               ],
             ),
                       Padding(
